@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../Services/mysql_service.dart';
 import 'ConfigScreen.dart';
 import 'MessajesScreen.dart';
-import 'paradas_screen.dart';
+import 'Paradas_Screen.dart';
 
 class DetailsRoutsScreen extends StatefulWidget {
   final Map<String, dynamic> ruta;
