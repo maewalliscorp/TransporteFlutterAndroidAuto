@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../Services/mysql_service.dart';
 import 'ConfigScreen.dart';
 import 'MessajesScreen.dart';
-import 'Paradas_Screen.dart';
+import 'paradas_screen.dart';
 
 class DetailsRoutsScreen extends StatefulWidget {
   final Map<String, dynamic> ruta;
@@ -116,7 +116,7 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => HomeScreen()),
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
               );
             },
           ),
@@ -124,6 +124,7 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
       ),
       body: Row(
         children: [
+          // Mitad izquierda: tarjeta a tamaño completo con letra grande
           Expanded(
             flex: 2,
             child: Container(
@@ -135,51 +136,62 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
                   ? Center(child: Text(_error!))
                   : (_rutaDetalle == null)
                   ? const Center(child: Text('No hay datos para esta ruta'))
-                  : Card(
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _rutaDetalle!['nombre']?.toString() ?? 'Sin nombre',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  : SizedBox.expand(
+                child: Card(
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: DefaultTextStyle(
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.black87,
                       ),
-                      const SizedBox(height: 8),
-                      Text('Ruta: ${_rutaDetalle!['id_ruta']}'),
-                      Text('Horario: ${_rutaDetalle!['id_horario']}'),
-                      Text('Origen: ${_rutaDetalle!['origen']}'),
-                      Text('Destino: ${_rutaDetalle!['destino']}'),
-                      Text('Duración Estimada: ${_rutaDetalle!['duracion_estimada']}'),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ParadasScreen(
-                                  ruta: _rutaDetalle!['nombre']?.toString() ?? '',
-                                ),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.directions),
-                          label: const Text('Ver Paradas'),
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Text(
+                            _rutaDetalle!['nombre']?.toString() ?? 'Sin nombre',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text('Ruta: ${_rutaDetalle!['id_ruta']}'),
+                          Text('Horario: ${_rutaDetalle!['id_horario']}'),
+                          Text('Origen: ${_rutaDetalle!['origen']}'),
+                          Text('Destino: ${_rutaDetalle!['destino']}'),
+                          Text('Duración Estimada: ${_rutaDetalle!['duracion_estimada']}'),
+                          const Spacer(),
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: TextButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ParadasScreen(
+                                      ruta: _rutaDetalle!['nombre']?.toString() ?? '',
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.directions),
+                              label: const Text('Ver Paradas', style: TextStyle(fontSize: 18)),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
+
+          // Mitad derecha: mapa
           Expanded(
             flex: 3,
             child: GoogleMap(
