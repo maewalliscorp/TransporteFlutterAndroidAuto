@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Home_Screen.dart';
+import 'MessajesScreen.dart';
 
 class ConfigScreen extends StatelessWidget {
   const ConfigScreen({super.key});
@@ -112,7 +113,15 @@ class ConfigScreen extends StatelessWidget {
             children: [
               _bottomIcon(Icons.mic),
               const SizedBox(width: 16),
-              _bottomIcon(Icons.chat_bubble),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Messajesscreen()),
+                  );
+                },
+                child: _bottomIcon(Icons.chat_bubble),
+              ),
               const SizedBox(width: 16),
               _bottomIcon(Icons.notifications),
               const Spacer(),
