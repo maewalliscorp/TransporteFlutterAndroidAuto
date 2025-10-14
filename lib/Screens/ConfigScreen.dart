@@ -79,27 +79,25 @@ class ConfigScreen extends StatelessWidget {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
-              child: Padding(
+              child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Configuración',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
-                    ),
-                    const SizedBox(height: 24),
-                    _pillButton(context, 'Preferencias de notificaciones'),
-                    const SizedBox(height: 18),
-                    _pillButton(context, 'Preferencias de idioma/voz'),
-                    const SizedBox(height: 18),
-                    _pillButton(context, 'Información del vehículo o servicio'),
-                    const SizedBox(height: 18),
-                    _pillButton(context, 'Acerca de la aplicación'),
-                    const Spacer(),
-                  ],
-                ),
+                children: [
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Configuración',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 24),
+                  _pillButton(context, 'Preferencias de notificaciones'),
+                  const SizedBox(height: 18),
+                  _pillButton(context, 'Preferencias de idioma/voz'),
+                  const SizedBox(height: 18),
+                  _pillButton(context, 'Información del vehículo o servicio'),
+                  const SizedBox(height: 18),
+                  _pillButton(context, 'Acerca de la aplicación'),
+                  // Sin Spacer()
+                ],
               ),
             ),
           ),
