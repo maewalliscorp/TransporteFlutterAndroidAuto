@@ -20,7 +20,7 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
   Map<String, dynamic>? _rutaDetalle;
   String? _error;
   bool _cargando = true;
-  final MySQLService _db = MySQLService();
+  final MySQLService _db = MySQLService.instance;
 
   final CameraPosition _initialCamera = const CameraPosition(
     target: LatLng(19.8165058, -97.3656139),
@@ -35,10 +35,9 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
 
   Future<void> _cargarRutaDetalle() async {
     try {
-      await _db.connect();
       Map<String, dynamic>? data;
 
-      // Prioriza por id si viene en el Map
+      // Prioriza por id si viene
       if (widget.ruta['id_ruta'] != null) {
         final id = int.tryParse(widget.ruta['id_ruta'].toString());
         if (id != null) {
@@ -46,7 +45,7 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
         }
       }
 
-      // Si no hay id o no se encontró, intenta por nombre
+      // Fallback por nombre
       if (data == null && widget.ruta['nombre'] != null) {
         data = await _db.getRutaByNombre(widget.ruta['nombre'].toString());
       }
@@ -64,6 +63,7 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
     }
   }
 
+  // Helpers locales
   Widget _bottomIcon(IconData icon) {
     return Container(
       width: 44,
@@ -254,11 +254,5 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _db.close();
-    super.dispose();
   }
 }

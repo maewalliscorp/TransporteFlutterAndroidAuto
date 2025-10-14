@@ -1,7 +1,6 @@
 import 'package:android_auto/Screens/MessajesScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import 'ConfigScreen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,36 +18,11 @@ class _HomeScreenState extends State<HomeScreen> {
     zoom: 13.0,
   );
 
-  // Helpers para replicar el estilo de la barra inferior de MapsScreen
-  Widget _bottomIcon(IconData icon) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.85),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(icon, color: Colors.white),
-    );
-  }
-
-  Widget _squareButton(IconData icon) {
-    return Container(
-      width: 44,
-      height: 32,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.85),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(icon, color: Colors.white, size: 18),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Android Auto'),
+        title: const Text('Android Auto', style: TextStyle(fontSize: 24)),
         centerTitle: true,
         backgroundColor: Colors.purple,
         actions: [
@@ -77,13 +51,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 8),
                   const Text(
                     'El camino más rapido en pantalla',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () => Navigator.pushNamed(context, '/rutas'),
-                    icon: const Icon(Icons.map),
-                    label: const Text('Rutas'),
+                    icon: const Icon(Icons.map, size: 24),
+                    label: const Text('Rutas', style: TextStyle(fontSize: 18)),
                   ),
                   const SizedBox(height: 12),
                   Expanded(
@@ -118,19 +92,19 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: Row(
             children: [
-              _bottomIcon(Icons.mic),
+              const _BottomIcon(icon: Icons.mic),
               const SizedBox(width: 16),
-              GestureDetector(
-                onTap: (){
-                  Navigator.push(context,
+              _BottomIcon(
+                icon: Icons.chat_bubble,
+                onTap: () {
+                  Navigator.push(
+                    context,
                     MaterialPageRoute(builder: (_) => const Messajesscreen()),
                   );
                 },
-                child :_bottomIcon(Icons.chat_bubble),
-
               ),
               const SizedBox(width: 16),
-              _bottomIcon(Icons.notifications),
+              const _BottomIcon(icon: Icons.notifications),
               const Spacer(),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
@@ -141,8 +115,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   shape: const StadiumBorder(),
                 ),
                 onPressed: () => Navigator.pushNamed(context, '/rutas'),
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Rutas'),
+                icon: const Icon(Icons.play_arrow, size: 24),
+                label: const Text('Rutas', style: TextStyle(fontSize: 18)),
               ),
               const Spacer(),
               Container(
@@ -153,17 +127,59 @@ class _HomeScreenState extends State<HomeScreen> {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: const Icon(Icons.graphic_eq,
-                    color: Colors.black, size: 24),
+                child:
+                const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
               ),
               const SizedBox(width: 12),
-              _squareButton(Icons.remove),
+              const _SquareButton(icon: Icons.remove),
               const SizedBox(width: 8),
-              _squareButton(Icons.add),
+              const _SquareButton(icon: Icons.add),
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+
+
+class _BottomIcon extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+  const _BottomIcon({required this.icon, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final child = Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, color: Colors.white),
+    );
+    return onTap == null ? child : GestureDetector(onTap: onTap, child: child);
+  }
+}
+
+class _SquareButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+  const _SquareButton({required this.icon, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final child = Container(
+      width: 44,
+      height: 32,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, color: Colors.white, size: 18),
+    );
+    return onTap == null ? child : GestureDetector(onTap: onTap, child: child);
   }
 }

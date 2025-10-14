@@ -17,7 +17,7 @@ class _RutasScreenState extends State<RutasScreen> {
   late GoogleMapController _mapController;
   List<Map<String, dynamic>> _rutas = [];
   bool _cargando = true;
-  final MySQLService _db = MySQLService();
+  final MySQLService _db = MySQLService.instance;
   String? _error;
 
   final CameraPosition _initialCamera = const CameraPosition(
@@ -33,7 +33,6 @@ class _RutasScreenState extends State<RutasScreen> {
 
   Future<void> _cargarRutas() async {
     try {
-      await _db.connect();
       final data = await _db.getRutas();
       setState(() {
         _rutas = data;
@@ -47,7 +46,7 @@ class _RutasScreenState extends State<RutasScreen> {
     }
   }
 
-  // Helpers
+  // Helpers locales
   Widget _bottomIcon(IconData icon) {
     return Container(
       width: 44,
@@ -84,10 +83,7 @@ class _RutasScreenState extends State<RutasScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => DetailsRoutsScreen(
-          ruta: {
-            'id_ruta': r['id_ruta'],
-            'nombre': r['nombre'],
-          },
+          ruta: {'id_ruta': r['id_ruta'], 'nombre': r['nombre']},
         ),
       ),
     );
@@ -146,16 +142,15 @@ class _RutasScreenState extends State<RutasScreen> {
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        // Columnas según ancho disponible (responsivo)
                         int crossAxisCount = 1;
                         if (constraints.maxWidth >= 1000) {
                           crossAxisCount = 3;
                         } else if (constraints.maxWidth >= 700) {
                           crossAxisCount = 2;
                         }
-
                         return GridView.builder(
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate:
+                          SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: crossAxisCount,
                             mainAxisSpacing: 12,
                             crossAxisSpacing: 12,
@@ -167,61 +162,88 @@ class _RutasScreenState extends State<RutasScreen> {
                             return Card(
                               elevation: 3,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius:
+                                BorderRadius.circular(12),
                               ),
                               child: InkWell(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius:
+                                BorderRadius.circular(12),
                                 onTap: () => _goToDetails(index),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
                                           Expanded(
                                             child: Text(
-                                              ruta['nombre']?.toString() ?? 'Sin nombre',
+                                              ruta['nombre']
+                                                  ?.toString() ??
+                                                  'Sin nombre',
                                               style: const TextStyle(
                                                 fontSize: 18,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight:
+                                                FontWeight.bold,
                                               ),
-                                              overflow: TextOverflow.ellipsis,
+                                              overflow: TextOverflow
+                                                  .ellipsis,
                                             ),
                                           ),
                                           IconButton(
                                             tooltip: 'Ver detalles',
-                                            icon: const Icon(Icons.visibility, color: Colors.purple),
-                                            onPressed: () => _goToDetails(index),
+                                            icon: const Icon(
+                                              Icons.visibility,
+                                              color: Colors.purple,
+                                            ),
+                                            onPressed: () =>
+                                                _goToDetails(index),
                                           ),
                                         ],
                                       ),
                                       const SizedBox(height: 8),
-                                      Text('Origen: ${ruta['origen'] ?? ''}'),
-                                      Text('Destino: ${ruta['destino'] ?? ''}'),
+                                      Text(
+                                          'Origen: ${ruta['origen'] ?? ''}'),
+                                      Text(
+                                          'Destino: ${ruta['destino'] ?? ''}'),
                                       const Spacer(),
                                       Row(
                                         children: [
-                                          const Icon(Icons.route, size: 18, color: Colors.grey),
+                                          const Icon(Icons.route,
+                                              size: 18,
+                                              color: Colors.grey),
                                           const SizedBox(width: 6),
                                           Text(
-                                            'Ruta: ${ruta['id_ruta'] ?? ''}',
-                                            style: const TextStyle(color: Colors.grey),
+                                            'ID: ${ruta['id_ruta'] ?? ''}',
+                                            style: const TextStyle(
+                                                color: Colors.grey),
                                           ),
                                           const Spacer(),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            padding: const EdgeInsets
+                                                .symmetric(
+                                                horizontal: 10,
+                                                vertical: 6),
                                             decoration: BoxDecoration(
-                                              color: Colors.purple.withOpacity(0.1),
-                                              borderRadius: BorderRadius.circular(20),
+                                              color: Colors.purple
+                                                  .withOpacity(0.1),
+                                              borderRadius:
+                                              BorderRadius
+                                                  .circular(20),
                                             ),
                                             child: Text(
-                                              (ruta['duracion_estimada']?.toString() ?? '').isEmpty
+                                              (ruta['duracion_estimada']
+                                                  ?.toString() ??
+                                                  '')
+                                                  .isEmpty
                                                   ? 'Duración N/D'
                                                   : 'Duración: ${ruta['duracion_estimada']}',
-                                              style: const TextStyle(color: Colors.purple),
+                                              style: const TextStyle(
+                                                  color:
+                                                  Colors.purple),
                                             ),
-                                          ),
+                                          )
                                         ],
                                       ),
                                     ],
@@ -302,11 +324,5 @@ class _RutasScreenState extends State<RutasScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _db.close();
-    super.dispose();
   }
 }
