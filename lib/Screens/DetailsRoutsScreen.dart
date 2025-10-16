@@ -4,7 +4,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../Services/mysql_service.dart';
 import 'ConfigScreen.dart';
 import 'MessajesScreen.dart';
-import 'paradas_screen.dart';
+import 'Paradas_Screen.dart';
+import '../Responsive/responsive.dart';
 
 class DetailsRoutsScreen extends StatefulWidget {
   final Map<String, dynamic> ruta;
@@ -37,7 +38,6 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
     try {
       Map<String, dynamic>? data;
 
-      // Prioriza por id si viene
       if (widget.ruta['id_ruta'] != null) {
         final id = int.tryParse(widget.ruta['id_ruta'].toString());
         if (id != null) {
@@ -45,7 +45,6 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
         }
       }
 
-      // Fallback por nombre
       if (data == null && widget.ruta['nombre'] != null) {
         data = await _db.getRutaByNombre(widget.ruta['nombre'].toString());
       }
@@ -63,7 +62,6 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
     }
   }
 
-  // Helpers locales
   Widget _bottomIcon(IconData icon) {
     return Container(
       width: 44,
@@ -122,92 +120,119 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
           ),
         ],
       ),
-      body: Row(
-        children: [
-          // Mitad izquierda: tarjeta a tamaño completo con letra grande
-          Expanded(
-            flex: 2,
-            child: Container(
-              color: Colors.purple[50],
-              padding: const EdgeInsets.all(16),
-              child: _cargando
-                  ? const Center(child: CircularProgressIndicator())
-                  : (_error != null)
-                  ? Center(child: Text(_error!))
-                  : (_rutaDetalle == null)
-                  ? const Center(child: Text('No hay datos para esta ruta'))
-                  : SizedBox.expand(
-                child: Card(
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: DefaultTextStyle(
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.black87,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = isWideWidth(constraints.maxWidth);
+
+          final detalleCard = Container(
+            color: Colors.purple[50],
+            padding: const EdgeInsets.all(16),
+            child: _cargando
+                ? const Center(child: CircularProgressIndicator())
+                : (_error != null)
+                ? Center(child: Text(_error!))
+                : (_rutaDetalle == null)
+                ? const Center(child: Text('No hay datos para esta ruta'))
+                : Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: DefaultTextStyle(
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.black87,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _rutaDetalle!['nombre']?.toString() ??
+                            'Sin nombre',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Text(
-                            _rutaDetalle!['nombre']?.toString() ?? 'Sin nombre',
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text('Ruta: ${_rutaDetalle!['id_ruta']}'),
-                          Text('Horario: ${_rutaDetalle!['id_horario']}'),
-                          Text('Origen: ${_rutaDetalle!['origen']}'),
-                          Text('Destino: ${_rutaDetalle!['destino']}'),
-                          Text('Duración Estimada: ${_rutaDetalle!['duracion_estimada']}'),
-                          const Spacer(),
-                          Align(
-                            alignment: Alignment.bottomRight,
-                            child: TextButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ParadasScreen(
-                                      ruta: _rutaDetalle!['nombre']?.toString() ?? '',
-                                    ),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.directions),
-                              label: const Text('Ver Paradas', style: TextStyle(fontSize: 18)),
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 12),
+                      Text('Ruta: ${_rutaDetalle!['id_ruta']}'),
+                      Text('Horario: ${_rutaDetalle!['id_horario']}'),
+                      Text('Origen: ${_rutaDetalle!['origen']}'),
+                      Text('Destino: ${_rutaDetalle!['destino']}'),
+                      Text(
+                          'Duración Estimada: ${_rutaDetalle!['duracion_estimada']}'),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: TextButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ParadasScreen(
+                                  ruta: _rutaDetalle!['nombre']
+                                      ?.toString() ??
+                                      '',
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.directions),
+                          label: const Text('Ver Paradas',
+                              style: TextStyle(fontSize: 18)),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
             ),
-          ),
+          );
 
-          // Mitad derecha: mapa
-          Expanded(
-            flex: 3,
-            child: GoogleMap(
-              initialCameraPosition: _initialCamera,
-              onMapCreated: _onMapCreated,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: true,
-            ),
-          ),
-        ],
+          final map = GoogleMap(
+            initialCameraPosition: _initialCamera,
+            onMapCreated: _onMapCreated,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: true,
+          );
+
+          if (wide) {
+            // Scroll vertical en el panel izquierdo para evitar overflow
+            return Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.zero,
+                    child: detalleCard,
+                  ),
+                ),
+                Expanded(flex: 3, child: map),
+              ],
+            );
+          } else {
+            final h = MediaQuery.of(context).size.height;
+            final detailsHeight = h * 0.45;
+            return Column(
+              children: [
+                Expanded(child: map),
+                SizedBox(
+                  height: detailsHeight,
+                  child: SingleChildScrollView(child: detalleCard),
+                ),
+              ],
+            );
+          }
+        },
       ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.grey[350],
-        child: Padding(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               _bottomIcon(Icons.mic),
               const SizedBox(width: 16),
@@ -222,19 +247,20 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
               ),
               const SizedBox(width: 16),
               _bottomIcon(Icons.notifications),
-              const Spacer(),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E88E5),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: const StadiumBorder(),
                 ),
                 onPressed: () => Navigator.pushNamed(context, '/rutas'),
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Rutas'),
               ),
-              const Spacer(),
+              const SizedBox(width: 16),
               Container(
                 width: 44,
                 height: 44,
@@ -243,7 +269,8 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
+                child:
+                const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
               ),
               const SizedBox(width: 12),
               _squareButton(Icons.remove),

@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'ConfigScreen.dart';
 import 'Home_Screen.dart';
+import '../Responsive/responsive.dart';
 
 class Messajesscreen extends StatefulWidget {
   const Messajesscreen({super.key});
@@ -83,7 +84,6 @@ class _MessajesscreenState extends State<Messajesscreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Evita usar `ruta['nombre']` que no existe aquí
         title: const Text("Android Auto"),
         backgroundColor: Colors.purple,
         centerTitle: true,
@@ -109,94 +109,111 @@ class _MessajesscreenState extends State<Messajesscreen> {
         ],
       ),
       body: SafeArea(
-        child: Row(
-          children: [
-            // Izquierda: lista de mensajes (scrollable para evitar overflow)
-            Expanded(
-              flex: 10,
-              child: Container(
-                color: Colors.grey[300],
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Enviar mensajes',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = isWideWidth(constraints.maxWidth);
+
+            final messagesPanel = Container(
+              color: Colors.grey[300],
+              padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Enviar mensajes',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
                       ),
-                      const SizedBox(height: 20),
-                      _messageButton(
-                        icon: Icons.place_outlined,
-                        text: 'Estoy en la parada X',
-                      ),
-                      const SizedBox(height: 14),
-                      _messageButton(
-                        icon: Icons.timer_outlined,
-                        text: 'Tengo un retraso de  X minutos',
-                      ),
-                      const SizedBox(height: 14),
-                      _messageButton(
-                        icon: Icons.car_repair_outlined,
-                        text: 'Tengo un problema con el vehículo',
-                      ),
-                      const SizedBox(height: 14),
-                      _messageButton(
-                        icon: Icons.error_outline,
-                        text: 'Hay un Accidente',
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 20),
+                    _messageButton(
+                      icon: Icons.place_outlined,
+                      text: 'Estoy en la parada X',
+                    ),
+                    const SizedBox(height: 14),
+                    _messageButton(
+                      icon: Icons.timer_outlined,
+                      text: 'Tengo un retraso de  X minutos',
+                    ),
+                    const SizedBox(height: 14),
+                    _messageButton(
+                      icon: Icons.car_repair_outlined,
+                      text: 'Tengo un problema con el vehículo',
+                    ),
+                    const SizedBox(height: 14),
+                    _messageButton(
+                      icon: Icons.error_outline,
+                      text: 'Hay un Accidente',
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
               ),
-            ),
+            );
 
-            const VerticalDivider(width: 1, thickness: 1),
+            final map = GoogleMap(
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: _initialCamera,
+              zoomControlsEnabled: true,
+              myLocationButtonEnabled: false,
+              compassEnabled: true,
+              mapToolbarEnabled: false,
+            );
 
-            // Derecha: Google Map
-            Expanded(
-              flex: 16,
-              child: GoogleMap(
-                onMapCreated: _onMapCreated,
-                initialCameraPosition: _initialCamera,
-                zoomControlsEnabled: true,
-                myLocationButtonEnabled: false,
-                compassEnabled: true,
-                mapToolbarEnabled: false,
-              ),
-            ),
-          ],
+            if (wide) {
+              // Dos paneles lado a lado
+              return Row(
+                children: [
+                  Expanded(flex: 10, child: messagesPanel),
+                  const VerticalDivider(width: 1, thickness: 1),
+                  Expanded(flex: 16, child: map),
+                ],
+              );
+            } else {
+              // Mapa arriba, mensajes abajo con altura proporcional
+              final h = MediaQuery.of(context).size.height;
+              final panelHeight = h * 0.5;
+              return Column(
+                children: [
+                  Expanded(child: map),
+                  const Divider(height: 1, thickness: 1),
+                  SizedBox(height: panelHeight, child: messagesPanel),
+                ],
+              );
+            }
+          },
         ),
       ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.grey[350],
-        child: Padding(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               _bottomIcon(Icons.mic),
               const SizedBox(width: 16),
               _bottomIcon(Icons.chat_bubble),
               const SizedBox(width: 16),
               _bottomIcon(Icons.notifications),
-              const Spacer(),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E88E5),
                   foregroundColor: Colors.white,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 12),
                   shape: const StadiumBorder(),
                 ),
                 onPressed: () => Navigator.pushNamed(context, '/rutas'),
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Rutas'),
               ),
-              const Spacer(),
+              const SizedBox(width: 16),
               Container(
                 width: 44,
                 height: 44,
@@ -205,7 +222,8 @@ class _MessajesscreenState extends State<Messajesscreen> {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
+                child:
+                const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
               ),
               const SizedBox(width: 12),
               _squareButton(Icons.remove),

@@ -46,6 +46,7 @@ class _ParadasScreenState extends State<ParadasScreen> {
       child: Icon(icon, color: Colors.white, size: 18),
     );
   }
+
   final List<Map<String, dynamic>> _paradas = [
     {'name': 'Parada 1', 'post': const LatLng(19.8230, -97.3570)},
     {'name': 'Parada 2', 'post': const LatLng(19.8240, -97.3580)},
@@ -155,114 +156,133 @@ class _ParadasScreenState extends State<ParadasScreen> {
               );
             },
           ),
-          IconButton(icon: const Icon(Icons.home),
-              onPressed: (){
+          IconButton(
+              icon: const Icon(Icons.home),
+              onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context)=> HomeScreen()),
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
                 );
               }),
         ],
       ),
-      body: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Container(
-              color: Colors.purple[50],
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Paradas',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const Divider(),
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: _paradas.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
-                      itemBuilder: (context, index) {
-                        final name = _paradas[index]['name'] as String;
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.purple,
-                            child: Text(
-                              'P${index + 1}',
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 12),
-                            ),
-                          ),
-                          title: Text(name),
-                          trailing: Checkbox(
-                            value: _selected[index],
-                            onChanged: (val) => _toggleSelection(index, val),
-                          ),
-                          onTap: () =>
-                              _toggleSelection(index, !_selected[index]),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: _fitBoundsSelected,
-                        icon: const Icon(Icons.center_focus_strong),
-                        label: const Text('Centrar seleccion'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _selected = List<bool>.filled(_paradas.length, false);
-                          });
-                          _updateMarkers();
-                          _updatePolylines();
-                        },
-                        child: const Text('Limpiar'),
-                      ),
-                    ],
-                  )
-                ],
+      body: LayoutBuilder(builder: (context, constraints) {
+        final w = constraints.maxWidth;
+        final isWide = w >= 600;
+
+        final sidePanel = Container(
+          color: Colors.purple[50],
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Paradas',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-            ),
+              const Divider(),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: _paradas.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final name = _paradas[index]['name'] as String;
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.purple,
+                        child: Text(
+                          'P${index + 1}',
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 12),
+                        ),
+                      ),
+                      title: Text(name),
+                      trailing: Checkbox(
+                        value: _selected[index],
+                        onChanged: (val) => _toggleSelection(index, val),
+                      ),
+                      onTap: () => _toggleSelection(index, !_selected[index]),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _fitBoundsSelected,
+                    icon: const Icon(Icons.center_focus_strong),
+                    label: const Text('Centrar seleccion'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _selected =
+                        List<bool>.filled(_paradas.length, false);
+                      });
+                      _updateMarkers();
+                      _updatePolylines();
+                    },
+                    child: const Text('Limpiar'),
+                  ),
+                ],
+              )
+            ],
           ),
-          Expanded(
-            flex: 3,
-            child: GoogleMap(
-              initialCameraPosition: _initialCamera,
-              onMapCreated: _onMapCreated,
-              markers: _markers,
-              polylines: _polylines,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: true,
-            ),
-          ),
-        ],
-      ),
+        );
+
+        final map = GoogleMap(
+            initialCameraPosition: _initialCamera,
+            onMapCreated: _onMapCreated,
+            markers: _markers,
+            polylines: _polylines,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: true);
+
+        if (isWide) {
+          return Row(
+            children: [
+              Expanded(flex: 2, child: sidePanel),
+              Expanded(flex: 3, child: map),
+            ],
+          );
+        } else {
+          final h = MediaQuery.of(context).size.height;
+          final panelHeight = h * 0.45;
+          return Column(
+            children: [
+              Expanded(child: map),
+              SizedBox(
+                height: panelHeight,
+                child: sidePanel,
+              )
+            ],
+          );
+        }
+      }),
       bottomNavigationBar: BottomAppBar(
         color: Colors.grey[350],
-        child: Padding(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               _bottomIcon(Icons.mic),
               const SizedBox(width: 16),
               GestureDetector(
-                onTap: (){
-                  Navigator.push(context,
+                onTap: () {
+                  Navigator.push(
+                    context,
                     MaterialPageRoute(builder: (_) => const Messajesscreen()),
                   );
                 },
-                child :_bottomIcon(Icons.chat_bubble),
-
+                child: _bottomIcon(Icons.chat_bubble),
               ),
               const SizedBox(width: 16),
               _bottomIcon(Icons.notifications),
-              const Spacer(),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E88E5),
@@ -274,13 +294,13 @@ class _ParadasScreenState extends State<ParadasScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context)=> const MapsScreen()),
+                    MaterialPageRoute(builder: (context) => const MapsScreen()),
                   );
                 },
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Iniciar'),
               ),
-              const Spacer(),
+              const SizedBox(width: 16),
               Container(
                 width: 44,
                 height: 44,

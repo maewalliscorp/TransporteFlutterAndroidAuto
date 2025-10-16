@@ -4,6 +4,7 @@ import 'ConfigScreen.dart';
 import 'Home_Screen.dart';
 import 'MessajesScreen.dart';
 import 'TimeScreen.dart';
+import '../Responsive/responsive.dart'; // <- utilidades responsivas
 
 class MapsScreen extends StatelessWidget {
   const MapsScreen({super.key});
@@ -50,7 +51,6 @@ class MapsScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-
                     ),
                   ),
 
@@ -74,9 +74,14 @@ class MapsScreen extends StatelessWidget {
 class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final wide = isWideWidth(MediaQuery.of(context).size.width);
+
     return Container(
-      color:  Colors.purple,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color: Colors.purple,
+      padding: EdgeInsets.symmetric(
+        horizontal: wide ? 24 : 12,
+        vertical: 10,
+      ),
       child: Row(
         children: [
           const _TopIcon(icon: Icons.send),
@@ -94,7 +99,6 @@ class _TopBar extends StatelessWidget {
             },
             child: const _TopIcon(icon: Icons.alarm),
           ),
-
           const SizedBox(width: 16),
           Expanded(
             child: Text(
@@ -103,6 +107,7 @@ class _TopBar extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
+                fontSize: wide ? 20 : 16, // responsivo
               ),
             ),
           ),
@@ -116,13 +121,15 @@ class _TopBar extends StatelessWidget {
             },
           ),
           const SizedBox(width: 12),
-          IconButton(icon: const Icon(Icons.home),
-              onPressed: (){
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context)=> HomeScreen()),
-                );
-              }),
+          IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -173,8 +180,13 @@ class _EtaCard extends StatelessWidget {
 class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final wide = isWideWidth(MediaQuery.of(context).size.width);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: wide ? 16 : 12,
+        vertical: 10,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFFBDBDBD),
         borderRadius: const BorderRadius.only(
@@ -189,57 +201,64 @@ class _BottomBar extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          _BottomIcon(icon: Icons.mic),
-          const SizedBox(width: 16),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _BottomIcon(icon: Icons.mic),
+            const SizedBox(width: 16),
 
-          // Ícono de mensajes clickeable -> Messajesscreen
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const Messajesscreen()),
-              );
-            },
-            child: _BottomIcon(icon: Icons.chat_bubble),
-          ),
+            // Ícono de mensajes clickeable -> Messajesscreen
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Messajesscreen()),
+                );
+              },
+              child: _BottomIcon(icon: Icons.chat_bubble),
+            ),
 
-          const SizedBox(width: 16),
-          _BottomIcon(icon: Icons.notifications),
-          const Spacer(),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1E88E5),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: const StadiumBorder(),
+            const SizedBox(width: 16),
+            _BottomIcon(icon: Icons.notifications),
+            const SizedBox(width: 16),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E88E5),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: wide ? 20 : 16,
+                  vertical: 12,
+                ),
+                shape: const StadiumBorder(),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Messajesscreen()),
+                );
+              },
+              icon: const Icon(Icons.play_arrow),
+              label: Text(wide ? 'Mensajes' : 'Msg'),
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const Messajesscreen()),
-              );
-            },
-            icon: const Icon(Icons.play_arrow),
-            label: const Text('Mensajes'), // opcional: cambia el texto
-          ),
-          const Spacer(),
-          Container(
-            width: 44,
-            height: 44,
-            decoration: const BoxDecoration(
-              color: Color(0xFF1DB954),
-              shape: BoxShape.circle,
+            const SizedBox(width: 16),
+            Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: Color(0xFF1DB954),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
             ),
-            alignment: Alignment.center,
-            child: const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
-          ),
-          const SizedBox(width: 12),
-          _SquareButton(icon: Icons.remove),
-          const SizedBox(width: 8),
-          _SquareButton(icon: Icons.add),
-        ],
+            const SizedBox(width: 12),
+            _SquareButton(icon: Icons.remove),
+            const SizedBox(width: 8),
+            _SquareButton(icon: Icons.add),
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'Home_Screen.dart';
 import 'MessajesScreen.dart';
+import '../Responsive/responsive.dart';
 
 class ConfigScreen extends StatelessWidget {
   const ConfigScreen({super.key});
@@ -16,8 +17,9 @@ class ConfigScreen extends StatelessWidget {
           shape: const StadiumBorder(),
           elevation: 0,
         ),
-        onPressed: onTap ?? () => ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(text))),
+        onPressed: onTap ??
+                () => ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(text))),
         child: Align(
           alignment: Alignment.center,
           child: Text(
@@ -76,38 +78,70 @@ class ConfigScreen extends StatelessWidget {
         child: Container(
           color: Colors.grey[300],
           width: double.infinity,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 800),
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                children: [
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Configuración',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final wide = isWideWidth(constraints.maxWidth);
+              final maxBodyWidth = wide ? 1000.0 : 800.0;
+
+              final buttons = <Widget>[
+                _pillButton(context, 'Preferencias de notificaciones'),
+                _pillButton(context, 'Preferencias de idioma/voz'),
+                _pillButton(context, 'Información del vehículo o servicio'),
+                _pillButton(context, 'Acerca de la aplicación'),
+              ];
+
+              return Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: maxBodyWidth),
+                  child: SingleChildScrollView(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Configuración',
+                          style: TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 24),
+                        if (!wide) ...[
+                          for (int i = 0; i < buttons.length; i++) ...[
+                            buttons[i],
+                            if (i != buttons.length - 1)
+                              const SizedBox(height: 18),
+                          ],
+                        ] else ...[
+                          Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            children: buttons
+                                .map(
+                                  (b) => SizedBox(
+                                width: halfWrapWidth(constraints.maxWidth),
+                                child: b,
+                              ),
+                            )
+                                .toList(),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 24),
-                  _pillButton(context, 'Preferencias de notificaciones'),
-                  const SizedBox(height: 18),
-                  _pillButton(context, 'Preferencias de idioma/voz'),
-                  const SizedBox(height: 18),
-                  _pillButton(context, 'Información del vehículo o servicio'),
-                  const SizedBox(height: 18),
-                  _pillButton(context, 'Acerca de la aplicación'),
-                  // Sin Spacer()
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.grey[350],
-        child: Padding(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               _bottomIcon(Icons.mic),
               const SizedBox(width: 16),
@@ -122,19 +156,20 @@ class ConfigScreen extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               _bottomIcon(Icons.notifications),
-              const Spacer(),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E88E5),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 12),
                   shape: const StadiumBorder(),
                 ),
                 onPressed: () => Navigator.pushNamed(context, '/rutas'),
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Rutas'),
               ),
-              const Spacer(),
+              const SizedBox(width: 16),
               Container(
                 width: 44,
                 height: 44,
@@ -143,7 +178,8 @@ class ConfigScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
+                child:
+                const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
               ),
               const SizedBox(width: 12),
               _squareButton(Icons.remove),

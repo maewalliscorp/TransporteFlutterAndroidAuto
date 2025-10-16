@@ -2,6 +2,7 @@ import 'package:android_auto/Screens/MessajesScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'ConfigScreen.dart';
+import '../Responsive/responsive.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,60 +39,91 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(icon: const Icon(Icons.home), onPressed: () {}),
         ],
       ),
-      body: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Container(
-              color: Colors.purple[50],
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  const Text(
-                    'El camino más rapido en pantalla',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () => Navigator.pushNamed(context, '/rutas'),
-                    icon: const Icon(Icons.map, size: 24),
-                    label: const Text('Rutas', style: TextStyle(fontSize: 18)),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: Center(
-                      child: Image.asset(
-                        'assets/images/car.png',
-                        height: 140,
-                        fit: BoxFit.contain,
-                      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = isWideWidth(constraints.maxWidth);
+
+          final sidePanel = Container(
+            color: Colors.purple[50],
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                const Text(
+                  'El camino más rapido en pantalla',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () => Navigator.pushNamed(context, '/rutas'),
+                  icon: const Icon(Icons.map, size: 24),
+                  label: const Text('Rutas', style: TextStyle(fontSize: 18)),
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: Center(
+                    child: Image.asset(
+                      'assets/images/car.png',
+                      height: 140,
+                      fit: BoxFit.contain,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-          Expanded(
-            flex: 3,
-            child: GoogleMap(
-              initialCameraPosition: _initialCamera,
-              onMapCreated: (controller) {
-                _mapController = controller;
-              },
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: true,
-            ),
-          )
-        ],
+          );
+
+          final map = GoogleMap(
+            initialCameraPosition: _initialCamera,
+            onMapCreated: (controller) {
+              _mapController = controller;
+            },
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: true,
+          );
+
+          if (isWide) {
+            // Pantallas anchas: layout en fila
+            return Row(
+              children: [
+                Expanded(flex: 2, child: sidePanel),
+                Expanded(flex: 3, child: map),
+              ],
+            );
+          } else {
+            // Pantallas estrechas: layout en columna
+            final h = MediaQuery.of(context).size.height;
+            final panelHeight = h * 0.45;
+            return Column(
+              children: [
+                Expanded(child: map),
+                SizedBox(
+                  height: panelHeight,
+                  child: sidePanel,
+                ),
+              ],
+            );
+          }
+        },
       ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.grey[350],
-        child: Padding(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 260),
+                child: const Text(
+                  '',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              const SizedBox(width: 12),
               const _BottomIcon(icon: Icons.mic),
               const SizedBox(width: 16),
               _BottomIcon(
@@ -105,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(width: 16),
               const _BottomIcon(icon: Icons.notifications),
-              const Spacer(),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E88E5),
@@ -118,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: const Icon(Icons.play_arrow, size: 24),
                 label: const Text('Rutas', style: TextStyle(fontSize: 18)),
               ),
-              const Spacer(),
+              const SizedBox(width: 16),
               Container(
                 width: 44,
                 height: 44,
@@ -142,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-
+// Widgets privados integrados
 
 class _BottomIcon extends StatelessWidget {
   final IconData icon;
