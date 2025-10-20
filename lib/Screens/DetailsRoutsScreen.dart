@@ -135,57 +135,64 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
                 ? const Center(child: Text('No hay datos para esta ruta'))
                 : Card(
               elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: DefaultTextStyle(
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.black87,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _rutaDetalle!['nombre']?.toString() ??
-                            'Sin nombre',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+              child: Stack(
+                children: [
+                  // Contenido principal
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: DefaultTextStyle(
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.black87,
                       ),
-                      const SizedBox(height: 12),
-                      Text('Ruta: ${_rutaDetalle!['id_ruta']}'),
-                      Text('Horario: ${_rutaDetalle!['id_horario']}'),
-                      Text('Origen: ${_rutaDetalle!['origen']}'),
-                      Text('Destino: ${_rutaDetalle!['destino']}'),
-                      Text(
-                          'Duración Estimada: ${_rutaDetalle!['duracion_estimada']}'),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: TextButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ParadasScreen(
-                                  ruta: _rutaDetalle!['nombre']
-                                      ?.toString() ??
-                                      '',
-                                ),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.directions),
-                          label: const Text('Ver Paradas',
-                              style: TextStyle(fontSize: 18)),
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _rutaDetalle!['nombre']?.toString() ??
+                                'Sin nombre',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text('Ruta: ${_rutaDetalle!['id_ruta']}'),
+                          Text('Horario: ${_rutaDetalle!['id_horario']}'),
+                          Text('Origen: ${_rutaDetalle!['origen']}'),
+                          Text('Destino: ${_rutaDetalle!['destino']}'),
+                          Text(
+                              'Duración Estimada: ${_rutaDetalle!['duracion_estimada']}'),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+
+                  // Ícono en esquina superior derecha
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: IconButton(
+                      tooltip: 'Ver Paradas',
+                      icon: const Icon(Icons.directions),
+                      color: Colors.blue,
+                      iconSize: 28,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ParadasScreen(
+                              ruta:
+                              _rutaDetalle!['nombre']?.toString() ?? '',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
           );
