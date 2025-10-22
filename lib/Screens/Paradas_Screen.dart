@@ -5,6 +5,7 @@ import 'ConfigScreen.dart';
 import 'Home_Screen.dart';
 import 'MapsScreen.dart';
 import 'MessajesScreen.dart';
+import '../Services/mysql_service.dart';
 
 class ParadasScreen extends StatefulWidget {
   final String ruta;
@@ -47,18 +48,12 @@ class _ParadasScreenState extends State<ParadasScreen> {
     );
   }
 
-  final List<Map<String, dynamic>> _paradas = [
-    {'name': 'Parada 1', 'post': const LatLng(19.8230, -97.3570)},
-    {'name': 'Parada 2', 'post': const LatLng(19.8240, -97.3580)},
-    {'name': 'Parada 3', 'post': const LatLng(19.8250, -97.3590)},
-    {'name': 'Parada 4', 'post': const LatLng(19.8260, -97.3600)},
-    {'name': 'Parada 5', 'post': const LatLng(19.8270, -97.3610)},
-    {'name': 'Parada 6', 'post': const LatLng(19.8280, -97.3620)},
-    {'name': 'Parada 7', 'post': const LatLng(19.8290, -97.3630)},
-    {'name': 'Parada 8', 'post': const LatLng(19.8300, -97.3640)},
-  ];
+  final MySQLService _db = MySQLService.instance;
 
+  List<Map<String, dynamic>> _paradas = [];
   late List<bool> _selected;
+  bool _loading = true;
+  String? _error;
 
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
@@ -66,9 +61,42 @@ class _ParadasScreenState extends State<ParadasScreen> {
   @override
   void initState() {
     super.initState();
-    _selected = List<bool>.filled(_paradas.length, false);
-    _updateMarkers();
-    _updatePolylines();
+    _loadParadas();
+  }
+
+  Future<void> _loadParadas() async {
+    try {
+      final data = await _db.getParadasByRutaNombre(widget.ruta);
+      _paradas = data
+          .map((p) => {
+        'name': p['nombre']?.toString() ?? 'Parada',
+        'post': LatLng(
+          (p['latitud'] as num).toDouble(),
+          (p['longitud'] as num).toDouble(),
+        ),
+      })
+          .toList();
+      _selected = List<bool>.filled(_paradas.length, false);
+      _loading = false;
+      _error = null;
+
+      _updateMarkers();
+      _updatePolylines();
+
+      if (_paradas.isNotEmpty) {
+        final first = _paradas.first['post'] as LatLng;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _mapController.animateCamera(
+            CameraUpdate.newLatLngZoom(first, 14.0),
+          );
+        });
+      }
+      setState(() {});
+    } catch (e) {
+      _loading = false;
+      _error = 'Error al cargar paradas: $e';
+      setState(() {});
+    }
   }
 
   void _updateMarkers() {
@@ -182,9 +210,14 @@ class _ParadasScreenState extends State<ParadasScreen> {
               ),
               const Divider(),
               Expanded(
-                child: ListView.separated(
+                child: _loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : (_error != null)
+                    ? Center(child: Text(_error!))
+                    : ListView.separated(
                   itemCount: _paradas.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  separatorBuilder: (_, __) =>
+                  const Divider(height: 1),
                   itemBuilder: (context, index) {
                     final name = _paradas[index]['name'] as String;
                     return ListTile(
@@ -199,9 +232,11 @@ class _ParadasScreenState extends State<ParadasScreen> {
                       title: Text(name),
                       trailing: Checkbox(
                         value: _selected[index],
-                        onChanged: (val) => _toggleSelection(index, val),
+                        onChanged: (val) =>
+                            _toggleSelection(index, val),
                       ),
-                      onTap: () => _toggleSelection(index, !_selected[index]),
+                      onTap: () => _toggleSelection(
+                          index, !_selected[index]),
                     );
                   },
                 ),
@@ -233,12 +268,13 @@ class _ParadasScreenState extends State<ParadasScreen> {
         );
 
         final map = GoogleMap(
-            initialCameraPosition: _initialCamera,
-            onMapCreated: _onMapCreated,
-            markers: _markers,
-            polylines: _polylines,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: true);
+          initialCameraPosition: _initialCamera,
+          onMapCreated: _onMapCreated,
+          markers: _markers,
+          polylines: _polylines,
+          myLocationButtonEnabled: false,
+          zoomControlsEnabled: true,
+        );
 
         if (isWide) {
           return Row(
@@ -287,14 +323,15 @@ class _ParadasScreenState extends State<ParadasScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E88E5),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 12),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: const StadiumBorder(),
                 ),
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const MapsScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const MapsScreen()),
                   );
                 },
                 icon: const Icon(Icons.play_arrow),
