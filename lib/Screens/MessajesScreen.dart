@@ -1,3 +1,4 @@
+import 'package:android_auto/Services/mysql_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -13,6 +14,26 @@ class Messajesscreen extends StatefulWidget {
 }
 
 class _MessajesscreenState extends State<Messajesscreen> {
+  List<Map<String, dynamic>> _mensajes = [];
+  bool _loading = true;
+
+  @override
+  void initState(){
+    super.initState();
+    _cargarMensajes();
+  }
+  Future<void> _cargarMensajes() async{
+    try{
+      final mensajes =await MySQLService.instance.getMessajes();
+      setState(() {
+        _mensajes = mensajes;
+        _loading = false;
+      });
+    }catch (e){
+      print("Error al obtener mensajes. $e");
+      setState(()=> _loading = false);
+    }
+  }
   GoogleMapController? _mapController;
 
   final CameraPosition _initialCamera = const CameraPosition(
@@ -128,27 +149,28 @@ class _MessajesscreenState extends State<Messajesscreen> {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    _messageButton(
-                      icon: Icons.place_outlined,
-                      text: 'Estoy en la parada X',
-                    ),
-                    const SizedBox(height: 14),
-                    _messageButton(
-                      icon: Icons.timer_outlined,
-                      text: 'Tengo un retraso de  X minutos',
-                    ),
-                    const SizedBox(height: 14),
-                    _messageButton(
-                      icon: Icons.car_repair_outlined,
-                      text: 'Tengo un problema con el vehículo',
-                    ),
-                    const SizedBox(height: 14),
-                    _messageButton(
-                      icon: Icons.error_outline,
-                      text: 'Hay un Accidente',
-                    ),
-                    const SizedBox(height: 8),
+                    if(_loading)
+                      const Center(child: CircularProgressIndicator())
+                    else if (_mensajes.isEmpty)
+                      const Text("No hay mensajes disponibles.")
+                    else
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: _mensajes.map((msg){
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 14),
+                            child: _messageButton(
+                              icon: Icons.message_outlined,
+                              text: msg["mensaje"] ??"Mensaje sin texto",
+                              onPressed: (){
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Mensaje: ${msg["mensaje"]}")),
+                                );
+                              },
+                            ),
+                          );
+                        }).toList(),
+                      ),
                   ],
                 ),
               ),
