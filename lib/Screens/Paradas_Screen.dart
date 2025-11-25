@@ -9,8 +9,9 @@ import '../Services/mysql_service.dart';
 
 class ParadasScreen extends StatefulWidget {
   final String ruta;
+  final String codigo; // <- agregado
 
-  const ParadasScreen({super.key, required this.ruta});
+  const ParadasScreen({super.key, required this.ruta, required this.codigo});
 
   @override
   State<ParadasScreen> createState() => _ParadasScreenState();
@@ -23,30 +24,6 @@ class _ParadasScreenState extends State<ParadasScreen> {
     target: LatLng(19.8165058, -97.3656139),
     zoom: 13.0,
   );
-
-  Widget _bottomIcon(IconData icon) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.85),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(icon, color: Colors.white),
-    );
-  }
-
-  Widget _squareButton(IconData icon) {
-    return Container(
-      width: 44,
-      height: 32,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.85),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(icon, color: Colors.white, size: 18),
-    );
-  }
 
   final MySQLService _db = MySQLService.instance;
 
@@ -66,7 +43,16 @@ class _ParadasScreenState extends State<ParadasScreen> {
 
   Future<void> _loadParadas() async {
     try {
-      final data = await _db.getParadasByRutaNombre(widget.ruta);
+      // Aquí usamos getParadasByRutaId; si tienes el id, pásalo en vez del nombre
+
+      final rutaData = await _db.getRutaByNombre(widget.ruta);
+      if (rutaData == null) throw Exception('Ruta no encontrada');
+
+      final rutaIdRaw = rutaData['id_ruta'] as int;
+      final int  rutaId = (rutaIdRaw is int)
+          ? rutaIdRaw: int.tryParse('$rutaIdRaw') ?? (rutaIdRaw as num).toInt();
+      final data = await _db.getParadasByRutaId(rutaId);
+
       _paradas = data
           .map((p) => {
         'name': p['nombre']?.toString() ?? 'Parada',
@@ -76,6 +62,7 @@ class _ParadasScreenState extends State<ParadasScreen> {
         ),
       })
           .toList();
+
       _selected = List<bool>.filled(_paradas.length, false);
       _loading = false;
       _error = null;
@@ -167,6 +154,30 @@ class _ParadasScreenState extends State<ParadasScreen> {
     _mapController.animateCamera(CameraUpdate.newLatLngZoom(first, 14.0));
   }
 
+  Widget _bottomIcon(IconData icon) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, color: Colors.white),
+    );
+  }
+
+  Widget _squareButton(IconData icon) {
+    return Container(
+      width: 44,
+      height: 32,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, color: Colors.white, size: 18),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,18 +191,23 @@ class _ParadasScreenState extends State<ParadasScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ConfigScreen()),
+                MaterialPageRoute(
+                  builder: (_) => ConfigScreen(codigo: widget.codigo),
+                ),
               );
             },
           ),
           IconButton(
-              icon: const Icon(Icons.home),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),
-                );
-              }),
+            icon: const Icon(Icons.home),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HomeScreen(codigo: widget.codigo),
+                ),
+              );
+            },
+          ),
         ],
       ),
       body: LayoutBuilder(builder: (context, constraints) {
@@ -235,8 +251,8 @@ class _ParadasScreenState extends State<ParadasScreen> {
                         onChanged: (val) =>
                             _toggleSelection(index, val),
                       ),
-                      onTap: () => _toggleSelection(
-                          index, !_selected[index]),
+                      onTap: () =>
+                          _toggleSelection(index, !_selected[index]),
                     );
                   },
                 ),
@@ -311,7 +327,9 @@ class _ParadasScreenState extends State<ParadasScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const Messajesscreen()),
+                    MaterialPageRoute(
+                      builder: (_) => Messajesscreen(codigo: widget.codigo),
+                    ),
                   );
                 },
                 child: _bottomIcon(Icons.chat_bubble),
@@ -331,7 +349,8 @@ class _ParadasScreenState extends State<ParadasScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const MapsScreen()),
+                        builder: (context) =>
+                            MapsScreen(codigo: widget.codigo)),
                   );
                 },
                 icon: const Icon(Icons.play_arrow),
@@ -346,8 +365,8 @@ class _ParadasScreenState extends State<ParadasScreen> {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child:
-                const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
+                child: const Icon(Icons.graphic_eq,
+                    color: Colors.black, size: 24),
               ),
               const SizedBox(width: 12),
               _squareButton(Icons.remove),
