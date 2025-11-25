@@ -1,11 +1,14 @@
-import 'package:android_auto/Screens/MessajesScreen.dart';
+import 'package:android_auto/Screens/Rutas_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../Services/mysql_service.dart';
 import 'ConfigScreen.dart';
+import 'MessajesScreen.dart';
 import '../Responsive/responsive.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String codigo; // Recibimos el código del operador desde el login
+  const HomeScreen({super.key, required this.codigo});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -13,12 +16,34 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late GoogleMapController _mapController;
+  String? nombreOperador; // Guardamos el nombre del operador
 
   final CameraPosition _initialCamera = const CameraPosition(
     target: LatLng(19.8165058, -97.3656139),
     zoom: 13.0,
   );
 
+  @override
+  void initState() {
+    super.initState();
+    _loadNombreOperador(); // Cargamos el nombre al iniciar
+  }
+
+  // ---------------------- Cargar nombre del operador ----------------------
+  Future<void> _loadNombreOperador() async {
+    try {
+      final nombre = await MySQLService.instance.getNombreOperador(widget.codigo);
+      if (nombre != null) {
+        setState(() {
+          nombreOperador = nombre;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error al cargar el nombre del operador: $e");
+    }
+  }
+
+  // ---------------------- Build UI ----------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,12 +52,27 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
         backgroundColor: Colors.purple,
         actions: [
+          // Mostramos el nombre en la esquina superior derecha
+          if (nombreOperador != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Center(
+                child: Text(
+                  nombreOperador!,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ConfigScreen()),
+                MaterialPageRoute(builder: (_) => ConfigScreen(codigo: widget.codigo,)),
               );
             },
           ),
@@ -46,45 +86,58 @@ class _HomeScreenState extends State<HomeScreen> {
           final sidePanel = Container(
             color: Colors.purple[50],
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 8),
-                const Text(
-                  'El camino más rapido en pantalla',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  onPressed: () => Navigator.pushNamed(context, '/rutas'),
-                  icon: const Icon(Icons.map, size: 24),
-                  label: const Text('Rutas', style: TextStyle(fontSize: 18)),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: Center(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  // Saludo personalizado en panel lateral
+                  if (nombreOperador != null)
+                    Text(
+                      'Hola, $nombreOperador 👋',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.purple,
+                      ),
+                    ),
+                  if (nombreOperador != null) const SizedBox(height: 12),
+                  const Text(
+                    'El camino más rápido en pantalla',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_)=> RutasScreen(codigo: widget.codigo))
+                    ),
+                    icon: const Icon(Icons.map, size: 24),
+                    label: const Text('Rutas', style: TextStyle(fontSize: 18)),
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
                     child: Image.asset(
                       'assets/images/car.png',
                       height: 140,
                       fit: BoxFit.contain,
                     ),
                   ),
-                ),
-              ],
+                  SizedBox(height: 8)
+                ],
+              ),
             ),
           );
 
           final map = GoogleMap(
             initialCameraPosition: _initialCamera,
-            onMapCreated: (controller) {
-              _mapController = controller;
-            },
+            onMapCreated: (controller) => _mapController = controller,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: true,
           );
 
           if (isWide) {
-            // Pantallas anchas: layout en fila
+            // Pantallas anchas
             return Row(
               children: [
                 Expanded(flex: 2, child: sidePanel),
@@ -92,16 +145,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             );
           } else {
-            // Pantallas estrechas: layout en columna
+            // Pantallas móviles o angostas
             final h = MediaQuery.of(context).size.height;
             final panelHeight = h * 0.45;
             return Column(
               children: [
                 Expanded(child: map),
-                SizedBox(
-                  height: panelHeight,
-                  child: sidePanel,
-                ),
+                SizedBox(height: panelHeight, child: sidePanel),
               ],
             );
           }
@@ -115,14 +165,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 260),
-                child: const Text(
-                  '',
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ),
               const SizedBox(width: 12),
               const _BottomIcon(icon: Icons.mic),
               const SizedBox(width: 16),
@@ -131,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const Messajesscreen()),
+                    MaterialPageRoute(builder: (_) => Messajesscreen(codigo: widget.codigo,)),
                   );
                 },
               ),
@@ -142,11 +184,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E88E5),
                   foregroundColor: Colors.white,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: const StadiumBorder(),
                 ),
-                onPressed: () => Navigator.pushNamed(context, '/rutas'),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => RutasScreen(codigo: widget.codigo)),
+                  );
+                },
                 icon: const Icon(Icons.play_arrow, size: 24),
                 label: const Text('Rutas', style: TextStyle(fontSize: 18)),
               ),
@@ -159,8 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child:
-                const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
+                child: const Icon(Icons.graphic_eq, color: Colors.black, size: 24),
               ),
               const SizedBox(width: 12),
               const _SquareButton(icon: Icons.remove),
@@ -174,8 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Widgets privados integrados
-
+// ---------------------- Widgets privados ----------------------
 class _BottomIcon extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;

@@ -8,9 +8,10 @@ import 'Paradas_Screen.dart';
 import '../Responsive/responsive.dart';
 
 class DetailsRoutsScreen extends StatefulWidget {
+  final String codigo;
   final Map<String, dynamic> ruta;
 
-  const DetailsRoutsScreen({super.key, required this.ruta});
+  const DetailsRoutsScreen({super.key, required this.ruta, required this.codigo});
 
   @override
   State<DetailsRoutsScreen> createState() => _DetailsRoutsScreenState();
@@ -105,7 +106,7 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ConfigScreen()),
+                MaterialPageRoute(builder: (_) => ConfigScreen(codigo: widget.codigo)),
               );
             },
           ),
@@ -114,7 +115,7 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                MaterialPageRoute(builder: (context) => HomeScreen(codigo: widget.codigo,)),
               );
             },
           ),
@@ -184,9 +185,9 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => ParadasScreen(
-                              ruta:
-                              _rutaDetalle!['nombre']?.toString() ?? '',
-                            ),
+                                ruta:
+                                _rutaDetalle!['nombre']?.toString() ?? '',
+                                codigo: widget.codigo),
                           ),
                         );
                       },
@@ -196,6 +197,7 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
               ),
             ),
           );
+
 
           final map = GoogleMap(
             initialCameraPosition: _initialCamera,
@@ -247,7 +249,7 @@ class _DetailsRoutsScreenState extends State<DetailsRoutsScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const Messajesscreen()),
+                    MaterialPageRoute(builder: (_) =>Messajesscreen(codigo:widget.codigo,)),
                   );
                 },
                 child: _bottomIcon(Icons.chat_bubble),

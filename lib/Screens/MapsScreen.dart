@@ -7,7 +7,8 @@ import 'TimeScreen.dart';
 import '../Responsive/responsive.dart'; // <- utilidades responsivas
 
 class MapsScreen extends StatelessWidget {
-  const MapsScreen({super.key});
+  final String codigo;
+  const MapsScreen({super.key, required this.codigo});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class MapsScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            _TopBar(),
+            _TopBar(codigo: codigo),
             Expanded(
               child: Stack(
                 children: [
@@ -59,7 +60,7 @@ class MapsScreen extends StatelessWidget {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    child: _BottomBar(),
+                    child: _BottomBar(codigo: codigo),
                   ),
                 ],
               ),
@@ -71,7 +72,11 @@ class MapsScreen extends StatelessWidget {
   }
 }
 
+// ---------------------- TopBar ----------------------
 class _TopBar extends StatelessWidget {
+  final String codigo;
+  const _TopBar({required this.codigo});
+
   @override
   Widget build(BuildContext context) {
     final wide = isWideWidth(MediaQuery.of(context).size.width);
@@ -92,8 +97,8 @@ class _TopBar extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) => Timescreen(
-                    ruta: {'nombre': 'Android Auto'},
-                  ),
+                      ruta: {'nombre': 'Android Auto'},
+                      codigo: codigo),
                 ),
               );
             },
@@ -107,7 +112,7 @@ class _TopBar extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
-                fontSize: wide ? 20 : 16, // responsivo
+                fontSize: wide ? 20 : 16,
               ),
             ),
           ),
@@ -116,7 +121,7 @@ class _TopBar extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ConfigScreen()),
+                MaterialPageRoute(builder: (_) => ConfigScreen(codigo: codigo)),
               );
             },
           ),
@@ -126,7 +131,7 @@ class _TopBar extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => HomeScreen()),
+                MaterialPageRoute(builder: (context) => HomeScreen(codigo: codigo)),
               );
             },
           ),
@@ -154,30 +159,11 @@ class _TopIcon extends StatelessWidget {
   }
 }
 
-class _EtaCard extends StatelessWidget {
-  const _EtaCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 220,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
+// ---------------------- BottomBar ----------------------
 class _BottomBar extends StatelessWidget {
+  final String codigo;
+  const _BottomBar({required this.codigo});
+
   @override
   Widget build(BuildContext context) {
     final wide = isWideWidth(MediaQuery.of(context).size.width);
@@ -209,12 +195,11 @@ class _BottomBar extends StatelessWidget {
             _BottomIcon(icon: Icons.mic),
             const SizedBox(width: 16),
 
-            // Ícono de mensajes clickeable -> Messajesscreen
             GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const Messajesscreen()),
+                  MaterialPageRoute(builder: (_) => Messajesscreen(codigo: codigo)),
                 );
               },
               child: _BottomIcon(icon: Icons.chat_bubble),
@@ -236,7 +221,7 @@ class _BottomBar extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const Messajesscreen()),
+                  MaterialPageRoute(builder: (_) => Messajesscreen(codigo: codigo)),
                 );
               },
               icon: const Icon(Icons.play_arrow),
@@ -311,7 +296,7 @@ class _RoutePainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final path = Path();
-    final cx = size.width * 0.55; // un poco a la derecha del centro
+    final cx = size.width * 0.55;
     path.moveTo(cx, size.height * 0.95);
     path.lineTo(cx, size.height * 0.6);
     path.cubicTo(
