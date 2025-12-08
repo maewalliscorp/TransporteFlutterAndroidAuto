@@ -7,7 +7,8 @@ import 'Home_Screen.dart';
 import '../Responsive/responsive.dart';
 
 class Messajesscreen extends StatefulWidget {
-  const Messajesscreen({super.key});
+  final String codigo;
+  const Messajesscreen({super.key, required this.codigo});
 
   @override
   State<Messajesscreen> createState() => _MessajesscreenState();
@@ -114,7 +115,7 @@ class _MessajesscreenState extends State<Messajesscreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ConfigScreen()),
+                MaterialPageRoute(builder: (_) => ConfigScreen(codigo: widget.codigo,)),
               );
             },
           ),
@@ -123,7 +124,7 @@ class _MessajesscreenState extends State<Messajesscreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                MaterialPageRoute(builder: (context) =>HomeScreen(codigo: widget.codigo,)),
               );
             },
           ),

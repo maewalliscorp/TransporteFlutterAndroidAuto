@@ -6,7 +6,8 @@ import 'Home_Screen.dart';
 import 'MessajesScreen.dart';
 
 class Timescreen extends StatefulWidget {
-  const Timescreen({super.key, required this.ruta});
+  final String codigo;
+  const Timescreen({super.key, required this.ruta, required this.codigo});
 
   final Map<String, dynamic> ruta;
 
@@ -66,7 +67,7 @@ class _TimescreenState extends State<Timescreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ConfigScreen()),
+                MaterialPageRoute(builder: (_) => ConfigScreen(codigo: widget.codigo,)),
               );
             },
           ),
@@ -75,7 +76,7 @@ class _TimescreenState extends State<Timescreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                MaterialPageRoute(builder: (context) => HomeScreen(codigo: widget.codigo,)),
               );
             },
           ),
@@ -137,7 +138,7 @@ class _TimescreenState extends State<Timescreen> {
               GestureDetector(
                 onTap: (){
                   Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const Messajesscreen()),
+                    MaterialPageRoute(builder: (_) => Messajesscreen(codigo: widget.codigo,)),
                   );
                 },
                 child :_bottomIcon(Icons.chat_bubble),

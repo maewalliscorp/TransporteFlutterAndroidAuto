@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'Screens/Home_Screen.dart';
 import 'Screens/Rutas_Screen.dart';
+import 'Screens/LoginScreen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -8,7 +9,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key,});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,9 +20,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const LoginScreen(),
       routes: {
-        '/rutas': (_) => const RutasScreen(),
+        '/home': (_) => HomeScreen(codigo: ""),
+        '/rutas': (_) => RutasScreen(codigo: ""),
       },
     );
   }

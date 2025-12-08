@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'Home_Screen.dart';
+import 'LoginScreen.dart';
 import 'MessajesScreen.dart';
 import 'Rutas_Screen.dart';
 import '../Responsive/responsive.dart';
 import '../Services/mysql_service.dart';
-import 'LoginScreen.dart';
+
 
 class ConfigScreen extends StatefulWidget {
   final String codigo;
