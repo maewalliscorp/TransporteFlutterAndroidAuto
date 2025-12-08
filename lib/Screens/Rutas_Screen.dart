@@ -1,13 +1,14 @@
-import 'package:android_auto/Services/mysql_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'ConfigScreen.dart';
 import 'DetailsRoutsScreen.dart';
 import 'Home_Screen.dart';
 import 'MessajesScreen.dart';
+import '../Services/mysql_service.dart';
 
 class RutasScreen extends StatefulWidget {
-  const RutasScreen({super.key});
+  final String codigo;
+  const RutasScreen({super.key, required this.codigo});
 
   @override
   State<RutasScreen> createState() => _RutasScreenState();
@@ -17,8 +18,8 @@ class _RutasScreenState extends State<RutasScreen> {
   late GoogleMapController _mapController;
   List<Map<String, dynamic>> _rutas = [];
   bool _cargando = true;
-  final MySQLService _db = MySQLService.instance;
   String? _error;
+  final MySQLService _db = MySQLService.instance;
 
   final CameraPosition _initialCamera = const CameraPosition(
     target: LatLng(19.8165058, -97.3656139),
@@ -33,7 +34,7 @@ class _RutasScreenState extends State<RutasScreen> {
 
   Future<void> _cargarRutas() async {
     try {
-      final data = await _db.getRutas();
+      final data = await _db.getRutasAsignadasPorCodigo(widget.codigo);
       setState(() {
         _rutas = data;
         _cargando = false;
@@ -46,7 +47,25 @@ class _RutasScreenState extends State<RutasScreen> {
     }
   }
 
-  // Helpers locales
+  void _onMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+  }
+
+  void _goToDetails(int index) {
+    if (index < 0 || index >= _rutas.length) return;
+    final r = _rutas[index];
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailsRoutsScreen(
+          ruta: {'id_ruta': r['id_ruta'], 'nombre': r['nombre']},
+          codigo: widget.codigo, // <- paso codigo
+        ),
+      ),
+    );
+  }
+
   Widget _bottomIcon(IconData icon) {
     return Container(
       width: 44,
@@ -71,24 +90,6 @@ class _RutasScreenState extends State<RutasScreen> {
     );
   }
 
-  void _onMapCreated(GoogleMapController controller) {
-    _mapController = controller;
-  }
-
-  void _goToDetails(int index) {
-    if (index < 0 || index >= _rutas.length) return;
-    final r = _rutas[index];
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DetailsRoutsScreen(
-          ruta: {'id_ruta': r['id_ruta'], 'nombre': r['nombre']},
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,7 +103,9 @@ class _RutasScreenState extends State<RutasScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ConfigScreen()),
+                MaterialPageRoute(
+                  builder: (_) => ConfigScreen(codigo: widget.codigo),
+                ),
               );
             },
           ),
@@ -111,7 +114,9 @@ class _RutasScreenState extends State<RutasScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                MaterialPageRoute(
+                  builder: (_) => HomeScreen(codigo: widget.codigo),
+                ),
               );
             },
           ),
@@ -121,6 +126,8 @@ class _RutasScreenState extends State<RutasScreen> {
           ? const Center(child: CircularProgressIndicator())
           : (_error != null)
           ? Center(child: Text(_error!))
+          :(_rutas.isEmpty)
+          ? const Center(child: Text('No tiene rutas asignadas'))
           : Row(
         children: [
           Expanded(
@@ -240,8 +247,7 @@ class _RutasScreenState extends State<RutasScreen> {
                                                   ? 'Duración N/D'
                                                   : 'Duración: ${ruta['duracion_estimada']}',
                                               style: const TextStyle(
-                                                  color:
-                                                  Colors.purple),
+                                                  color: Colors.purple),
                                             ),
                                           )
                                         ],
@@ -283,7 +289,9 @@ class _RutasScreenState extends State<RutasScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const Messajesscreen()),
+                    MaterialPageRoute(
+                      builder: (_) => Messajesscreen(codigo: widget.codigo),
+                    ),
                   );
                 },
                 child: _bottomIcon(Icons.chat_bubble),
